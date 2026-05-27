@@ -1,10 +1,11 @@
 {
-  "name": "Задачник PWA",
-  "short_name": "Задачник",
-  "description": "Приложение для управления задачами с push-уведомлениями",
-  "start_url": "/",
+  "name": "Р—Р°РґР°С‡РЅРёРє PWA",
+  "short_name": "Р—Р°РґР°С‡РЅРёРє",
+  "description": "РџСЂРёР»РѕР¶РµРЅРёРµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ Р·Р°РґР°С‡Р°РјРё СЃ push-СѓРІРµРґРѕРјР»РµРЅРёСЏРјРё",
+  "start_url": ".",
   "display": "standalone",
   "theme_color": "#4CAF50",
   "background_color": "#ffffff",
+  "scope": "/",
   "orientation": "portrait"
 }
