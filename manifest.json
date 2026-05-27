@@ -1,0 +1,10 @@
+{
+  "name": "Задачник PWA",
+  "short_name": "Задачник",
+  "description": "Приложение для управления задачами с push-уведомлениями",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4CAF50",
+  "background_color": "#ffffff",
+  "orientation": "portrait"
+}
