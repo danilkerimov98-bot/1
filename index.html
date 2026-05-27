@@ -1,32 +1,179 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#4CAF50">
-    <title>Задачник - PWA Приложение</title>
+    <title>Задачник</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .add-task {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+            .add-task input {
+                flex: 1;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                font-size: 16px;
+            }
+
+            .add-task button {
+                padding: 10px 20px;
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: 16px;
+            }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+            .filters button {
+                padding: 5px 15px;
+                background: #f0f0f0;
+                border: none;
+                border-radius: 15px;
+                cursor: pointer;
+            }
+
+                .filters button.active {
+                    background: #4CAF50;
+                    color: white;
+                }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            gap: 10px;
+        }
+
+            .task-item input {
+                width: 20px;
+                height: 20px;
+            }
+
+        .task-text {
+            flex: 1;
+        }
+
+            .task-text.completed {
+                text-decoration: line-through;
+                color: #999;
+            }
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .btn-install {
+            width: 100%;
+            padding: 10px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .btn-notify {
+            width: 100%;
+            padding: 10px;
+            background: #FF9800;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>📝 Задачник</h1>
-            <div class="notification-status">
-                <button id="notifyBtn" class="btn-notify">🔔 Включить уведомления</button>
-            </div>
-        </header>
+        <h1>📝 Задачник</h1>
 
         <div class="add-task">
-            <input type="text" id="taskInput" placeholder="Введите новую задачу..." maxlength="100">
-            <input type="datetime-local" id="taskDeadline">
-            <button id="addTaskBtn" class="btn-add">➕ Добавить</button>
+            <input type="text" id="taskInput" placeholder="Новая задача...">
+            <button id="addBtn">➕</button>
         </div>
 
         <div class="filters">
-            <button class="filter-btn active" data-filter="all">Все</button>
-            <button class="filter-btn" data-filter="active">Активные</button>
-            <button class="filter-btn" data-filter="completed">Выполненные</button>
+            <button class="active" data-filter="all">Все</button>
+            <button data-filter="active">Активные</button>
+            <button data-filter="completed">Выполненные</button>
         </div>
 
         <div class="stats">
@@ -35,9 +182,217 @@
             <span>Выполнено: <span id="completedCount">0</span></span>
         </div>
 
-        <ul id="taskList" class="task-list"></ul>
+        <ul class="task-list" id="taskList"></ul>
+
+        <button id="installBtn" class="btn-install hidden">📲 Установить приложение</button>
+        <button id="notifyBtn" class="btn-notify">🔔 Включить уведомления</button>
     </div>
 
-    <script src="app.js"></script>
+    <script nonce="EDNnf03nceIOfn39fn3e9h3sdfa">
+        // Простой задачник с PWA поддержкой
+        let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        let currentFilter = 'all';
+        let deferredPrompt = null;
+        let swRegistration = null;
+        let notificationsEnabled = false;
+
+        // Сохранение
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            updateStats();
+        }
+
+        // Добавление задачи
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            tasks.unshift({
+                id: Date.now(),
+                text: text,
+                completed: false,
+                createdAt: new Date().toISOString()
+            });
+
+            input.value = '';
+            saveTasks();
+            render();
+            sendNotification('✅ Новая задача', text);
+        }
+
+        // Удаление задачи
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            render();
+        }
+
+        // Переключение статуса
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                render();
+                if (task.completed) {
+                    sendNotification('🎉 Задача выполнена', task.text);
+                }
+            }
+        }
+
+        // Фильтрация
+        function getFilteredTasks() {
+            if (currentFilter === 'active') return tasks.filter(t => !t.completed);
+            if (currentFilter === 'completed') return tasks.filter(t => t.completed);
+            return tasks;
+        }
+
+        // Статистика
+        function updateStats() {
+            document.getElementById('totalCount').textContent = tasks.length;
+            document.getElementById('activeCount').textContent = tasks.filter(t => !t.completed).length;
+            document.getElementById('completedCount').textContent = tasks.filter(t => t.completed).length;
+        }
+
+        // Отображение
+        function render() {
+            const list = document.getElementById('taskList');
+            const filtered = getFilteredTasks();
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty">📭 Нет задач</div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(task => `
+                    <li class="task-item">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                        <span class="task-text ${task.completed ? 'completed' : ''}">${escapeHtml(task.text)}</span>
+                        <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️</button>
+                    </li>
+                `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Уведомления
+        function sendNotification(title, body) {
+            if (!notificationsEnabled) return;
+
+            if (swRegistration && swRegistration.showNotification) {
+                swRegistration.showNotification(title, { body });
+            } else if (Notification.permission === 'granted') {
+                new Notification(title, { body });
+            }
+        }
+
+        async function enableNotifications() {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                notificationsEnabled = true;
+                document.getElementById('notifyBtn').textContent = '🔕 Отключить уведомления';
+                document.getElementById('notifyBtn').style.background = '#f44336';
+                sendNotification('🔔 Уведомления включены', 'Вы будете получать оповещения о задачах');
+            }
+        }
+
+        function disableNotifications() {
+            notificationsEnabled = false;
+            document.getElementById('notifyBtn').textContent = '🔔 Включить уведомления';
+            document.getElementById('notifyBtn').style.background = '#FF9800';
+        }
+
+        // Регистрация Service Worker
+        async function registerSW() {
+            if (!('serviceWorker' in navigator)) {
+                console.log('SW not supported');
+                return;
+            }
+
+            try {
+                const registration = await navigator.serviceWorker.register('sw.js');
+                console.log('SW registered:', registration);
+                swRegistration = registration;
+
+                // Проверяем подписку на push
+                const subscription = await registration.pushManager.getSubscription();
+                notificationsEnabled = subscription !== null;
+                if (notificationsEnabled) {
+                    document.getElementById('notifyBtn').textContent = '🔕 Отключить уведомления';
+                    document.getElementById('notifyBtn').style.background = '#f44336';
+                }
+
+            } catch (error) {
+                console.error('SW registration failed:', error);
+            }
+        }
+
+        // PWA установка
+        function setupPWA() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('installBtn').classList.remove('hidden');
+            });
+
+            document.getElementById('installBtn').addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
+                console.log('Install result:', result.outcome);
+                document.getElementById('installBtn').classList.add('hidden');
+                deferredPrompt = null;
+            });
+        }
+
+        // Инициализация
+        function init() {
+            render();
+            setupPWA();
+            registerSW();
+
+            document.getElementById('addBtn').onclick = addTask;
+            document.getElementById('taskInput').onkeypress = (e) => {
+                if (e.key === 'Enter') addTask();
+            };
+
+            document.getElementById('notifyBtn').onclick = () => {
+                if (notificationsEnabled) {
+                    disableNotifications();
+                } else {
+                    enableNotifications();
+                }
+            };
+
+            document.querySelectorAll('[data-filter]').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    render();
+                };
+            });
+        }
+
+        init();
+    </script>
+
+    <script nonce="EDNnf03nceIOfn39fn3e9h3sdfa">
+        // Отдельный скрипт для Service Worker регистрации (дубль для надежности)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('SW registered from load event:', reg);
+                }).catch(err => {
+                    console.log('SW registration error:', err);
+                });
+            });
+        }
+    </script>
 </body>
 </html>
