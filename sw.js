@@ -1,93 +1,95 @@
-const CACHE_NAME = 'task-manager-v1';
+const CACHE_NAME = 'taskapp-v1';
 const urlsToCache = [
     '/',
     '/index.html',
-    '/styles.css',
-    '/app.js',
-    '/manifest.json'
+    '/app.js'
 ];
 
-self.addEventListener('install', event => {
+self.addEventListener('install', function (event) {
+    console.log('SW installing...');
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(urlsToCache))
+        caches.open(CACHE_NAME).then(function (cache) {
+            console.log('Caching files');
+            return cache.addAll(urlsToCache);
+        })
     );
+    self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener('activate', function (event) {
+    console.log('SW activating...');
     event.waitUntil(
-        caches.keys().then(cacheNames => {
+        caches.keys().then(function (cacheNames) {
             return Promise.all(
-                cacheNames.map(cacheName => {
+                cacheNames.map(function (cacheName) {
                     if (cacheName !== CACHE_NAME) {
+                        console.log('Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
         })
     );
+    return self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
+self.addEventListener('fetch', function (event) {
     event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request)
-                    .then(response => {
-                        if (!response || response.status !== 200 || response.type !== 'basic') {
-                            return response;
-                        }
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                cache.put(event.request, responseToCache);
-                            });
-                        return response;
-                    });
-            })
+        caches.match(event.request).then(function (response) {
+            if (response) {
+                return response;
+            }
+            return fetch(event.request);
+        }).catch(function () {
+            return caches.match('/index.html');
+        })
     );
 });
 
-self.addEventListener('push', event => {
-    let data = {
-        title: 'Çàäà÷íèê',
-        body: 'Ó âàñ åñòü çàäà÷à!'
-    };
+self.addEventListener('push', function (event) {
+    console.log('Push received');
+
+    let title = 'Задачник';
+    let body = 'У вас есть задача!';
 
     if (event.data) {
         try {
-            data = event.data.json();
+            const data = event.data.json();
+            title = data.title || title;
+            body = data.body || body;
         } catch (e) {
-            data.body = event.data.text();
+            body = event.data.text();
         }
     }
 
     const options = {
-        body: data.body,
+        body: body,
         vibrate: [200, 100, 200],
         data: {
-            url: data.url || '/'
+            url: '/'
         }
     };
 
     event.waitUntil(
-        self.registration.showNotification(data.title, options)
+        self.registration.showNotification(title, options)
     );
 });
 
-self.addEventListener('notificationclick', event => {
+self.addEventListener('notificationclick', function (event) {
+    console.log('Notification clicked');
     event.notification.close();
 
     event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true })
-            .then(windowClients => {
-                if (windowClients.length > 0) {
-                    return windowClients[0].focus();
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windowClients) {
+            for (let i = 0; i < windowClients.length; i++) {
+                const client = windowClients[i];
+                if (client.url === '/' && 'focus' in client) {
+                    return client.focus();
                 }
-                return clients.openWindow(event.notification.data.url || '/');
-            })
+            }
+            if (clients.openWindow) {
+                return clients.openWindow('/');
+            }
+        })
     );
 });
