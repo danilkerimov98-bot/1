@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
@@ -17,7 +17,6 @@ body {
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    overflow: hidden;
     padding: 20px;
 }
 
@@ -28,32 +27,51 @@ header {
     margin-bottom: 20px;
     padding-bottom: 20px;
     border-bottom: 2px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 h1 {
     color: #333;
-    font-size: 2em;
+    font-size: 1.8em;
+    margin: 0;
+}
+
+.btn-install {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-install:hover {
+    background: #1976D2;
+    transform: scale(1.05);
 }
 
 .btn-notify {
     background: #4CAF50;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
+    padding: 8px 16px;
+    border-radius: 20px;
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s;
 }
 
-    .btn-notify:hover {
-        background: #45a049;
-        transform: translateY(-2px);
-    }
+.btn-notify:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
 
-    .btn-notify.subscribed {
-        background: #ff9800;
-    }
+.btn-notify.active {
+    background: #ff9800;
+}
 
 .add-task {
     display: flex;
@@ -68,13 +86,12 @@ h1 {
     border: 2px solid #e0e0e0;
     border-radius: 10px;
     font-size: 16px;
-    transition: border-color 0.3s;
 }
 
-    #taskInput:focus {
-        outline: none;
-        border-color: #4CAF50;
-    }
+#taskInput:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
 
 #taskDeadline {
     flex: 1;
@@ -95,16 +112,17 @@ h1 {
     transition: all 0.3s;
 }
 
-    .btn-add:hover {
-        background: #45a049;
-        transform: translateY(-2px);
-    }
+.btn-add:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
 
 .filters {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .filter-btn {
@@ -116,10 +134,10 @@ h1 {
     transition: all 0.3s;
 }
 
-    .filter-btn.active {
-        background: #4CAF50;
-        color: white;
-    }
+.filter-btn.active {
+    background: #4CAF50;
+    color: white;
+}
 
 .stats {
     display: flex;
@@ -130,6 +148,8 @@ h1 {
     margin-bottom: 20px;
     font-size: 14px;
     color: #666;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .task-list {
@@ -146,19 +166,8 @@ h1 {
     background: #f9f9f9;
     border-radius: 10px;
     transition: all 0.3s;
-    animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .task-item:hover {
@@ -167,7 +176,6 @@ h1 {
 }
 
 .task-checkbox {
-    margin-right: 15px;
     width: 20px;
     height: 20px;
     cursor: pointer;
@@ -177,27 +185,22 @@ h1 {
     flex: 1;
     font-size: 16px;
     color: #333;
+    word-break: break-word;
 }
 
-    .task-text.completed {
-        text-decoration: line-through;
-        color: #999;
-    }
+.task-text.completed {
+    text-decoration: line-through;
+    color: #999;
+}
 
 .task-deadline {
     font-size: 12px;
     color: #ff9800;
-    margin-left: 10px;
 }
 
-    .task-deadline.overdue {
-        color: #f44336;
-        font-weight: bold;
-    }
-
-.task-actions {
-    display: flex;
-    gap: 10px;
+.task-deadline.overdue {
+    color: #f44336;
+    font-weight: bold;
 }
 
 .delete-btn {
@@ -210,9 +213,9 @@ h1 {
     transition: all 0.3s;
 }
 
-    .delete-btn:hover {
-        background: #da190b;
-    }
+.delete-btn:hover {
+    background: #da190b;
+}
 
 .empty-state {
     text-align: center;
@@ -225,17 +228,16 @@ h1 {
     .container {
         padding: 15px;
     }
-
+    
     .add-task {
         flex-direction: column;
     }
-
-    .task-item {
-        flex-wrap: wrap;
+    
+    header {
+        flex-direction: column;
     }
-
-    .task-deadline {
-        margin-left: 35px;
-        margin-top: 5px;
+    
+    .btn-install, .btn-notify {
+        width: 100%;
     }
 }
