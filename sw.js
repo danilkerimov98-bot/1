@@ -53,8 +53,8 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('push', event => {
     let data = {
-        title: 'Задачник',
-        body: 'У вас есть задача!'
+        title: 'Г‡Г Г¤Г Г·Г­ГЁГЄ',
+        body: 'Г“ ГўГ Г± ГҐГ±ГІГј Г§Г Г¤Г Г·Г !'
     };
 
     if (event.data) {
